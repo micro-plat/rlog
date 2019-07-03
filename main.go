@@ -13,7 +13,7 @@ func main() {
 		hydra.NewApp(
 			hydra.WithPlatName("logging"),
 			hydra.WithSystemName("logsaver"),
-			hydra.WithServerTypes("rpc"),
+			hydra.WithServerTypes("rpc-api"),
 			hydra.WithDebug()),
 	}
 

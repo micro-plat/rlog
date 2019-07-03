@@ -8,7 +8,7 @@ func (app *logSaver) install() {
 	//app.Conf.SetInput("#name", "系统名称", "需要记录日志的系统名称")
 	app.Conf.SetInput("#address", "elastic search服务器地址", "http://host:port")
 
-	//app.Conf.API.SetMainConf(`{"address":":7010"}`)
+	app.Conf.API.SetMainConf(`{"address":":7010"}`)
 	app.Conf.RPC.SetMainConf(`{"address":":7011"}`)
 
 	app.Conf.Plat.SetVarConf("elastic", "logging", `{
