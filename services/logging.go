@@ -83,9 +83,9 @@ LOOP:
 }
 func (l *Logging) writeNow() {
 	l.lock.Lock()
-	defer l.lock.Unlock()
 	buff := l.cacheBuffer[0:]
 	l.cacheBuffer = l.cacheBuffer[:0]
+	l.lock.Unlock()
 	if len(buff) > 0 {
 		go l.Write(buff)
 	}
