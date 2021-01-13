@@ -1,24 +1,16 @@
 package main
 
 import (
-	"github.com/micro-plat/hydra/hydra"
+	"github.com/micro-plat/hydra"
+	"github.com/micro-plat/hydra/hydra/servers/http"
+	"github.com/micro-plat/hydra/hydra/servers/rpc"
 )
 
-type logSaver struct {
-	*hydra.MicroApp
-}
+var App = hydra.NewApp(
+	hydra.WithPlatName("logging"),
+	hydra.WithSystemName("logsaver"),
+	hydra.WithServerTypes(http.API, rpc.RPC))
 
 func main() {
-	app := &logSaver{
-		hydra.NewApp(
-			hydra.WithPlatName("logging"),
-			hydra.WithSystemName("logsaver"),
-			hydra.WithServerTypes("rpc-api"),
-			hydra.WithDebug()),
-	}
-
-	app.init()
-	app.install()
-
-	app.Start()
+	App.Start()
 }

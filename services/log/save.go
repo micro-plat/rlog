@@ -3,45 +3,35 @@ package log
 import (
 	"fmt"
 
-	"github.com/micro-plat/hydra/component"
-	"github.com/micro-plat/hydra/context"
-	"github.com/micro-plat/logsaver/modules/logging"
+	"github.com/micro-plat/hydra"
+	"github.com/micro-plat/lib4go/errs"
+	"github.com/micro-plat/rlog/modules/logging"
 )
 
 type SaveHandler struct {
-	container component.IContainer
 }
 
 //NewSaveHandler 创建服务
-func NewSaveHandler(container component.IContainer) (u *SaveHandler) {
-	return &SaveHandler{
-		container: container,
-	}
+func NewSaveHandler() (u *SaveHandler) {
+	return &SaveHandler{}
 }
 
 //Handle 保存日志记录
-func (u *SaveHandler) Handle(ctx *context.Context) (r interface{}) {
-	ctx.Log.Info("--------保存日志----------")
-	body, err := ctx.Request.GetBody()
+func (u *SaveHandler) Handle(ctx hydra.IContext) (r interface{}) {
+	ctx.Log().Info("--------保存日志----------")
+	if err := ctx.Request().Check("plat", "system"); err != nil {
+		return err
+	}
+
+	body, err := ctx.Request().GetBody()
 	if err != nil {
 		return err
 	}
 	if len(body) <= 2 {
-		ctx.Response.SetStatus(204)
-		return nil
+		return errs.NewError(204, "无须处理")
 	}
-	index, exists := ctx.Request.Get("plat")
-	if !exists {
-		return fmt.Errorf("路由配置有误，未找到参数plat")
-	}
-	typeName, exists := ctx.Request.Get("system")
-	if !exists {
-		return fmt.Errorf("路由配置有误，未找到参数system")
-	}
-	// 未来发布的elasticsearch 6.0.0版本为保持兼容，仍然会支持单index，多type结构，但是作者已不推荐这么设置。在elasticsearch 7.0.0版本必须使用单index,单type，多type结构则会完全移除。
-	index = fmt.Sprintf("%s_%s", index, typeName)
-
-	logger, err := logging.Get(u.container, index, index)
+	index := fmt.Sprintf("%s_%s", ctx.Request().GetString("plat"), ctx.Request().GetString("system"))
+	logger, err := logging.GetLogging(hydra.C.Container())
 	if err != nil {
 		return err
 	}
