@@ -10,8 +10,10 @@ import (
 //SaveHandle 保存日志记录
 func SaveHandle(ctx hydra.IContext) (r interface{}) {
 	ctx.Log().Info("--------保存日志----------")
-	if err := ctx.Request().Check("plat", "system"); err != nil {
-		return err
+	plat := ctx.Request().Headers().GetString("Plat")
+	system := ctx.Request().Headers().GetString("System")
+	if plat == "" || system == "" {
+		return fmt.Errorf("请求头信息plat和system不能为空")
 	}
 
 	//获取数据
@@ -24,7 +26,7 @@ func SaveHandle(ctx hydra.IContext) (r interface{}) {
 	}
 
 	//保存日志
-	index := fmt.Sprintf("%s_%s", ctx.Request().Headers().GetString("plat"), ctx.Request().Headers().GetString("system"))
+	index := fmt.Sprintf("%s_%s", plat, system)
 	logger, err := GetLogging(hydra.C.Container(), index, index)
 	if err != nil {
 		return err

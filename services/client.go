@@ -34,7 +34,7 @@ func NewClient(c *Conf, index string, typeName string) (client *Client, err erro
 	if err != nil {
 		return nil, err
 	}
-	client = &Client{Client: clt}
+	client = &Client{Client: clt, index: index, typeName: typeName}
 	err = client.CheckIndexType()
 	return client, err
 }
@@ -64,6 +64,7 @@ func (client *Client) BenchAddData(datas [][]byte, timeout int) (n int, err erro
 			err = fmt.Errorf("批量保存数据发生异常：%v", err1)
 		}
 	}()
+
 	bulkRequest := client.Bulk().Index(client.index).Type(client.typeName)
 	for _, item := range datas {
 		logid := utility.GetGUID()

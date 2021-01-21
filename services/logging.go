@@ -20,6 +20,7 @@ type Logging struct {
 	once        sync.Once
 	w           sync.WaitGroup
 	done        bool
+	closeChan   chan struct{}
 }
 
 //NewLogging 创建日志组件
@@ -29,8 +30,10 @@ func NewLogging(client *Client, c *Conf, l *logger.Logger) (r *Logging, err erro
 		conf:        c,
 		logger:      l,
 		bufferChan:  make(chan []byte, 100000),
-		cacheBuffer: make([][]byte, 1000),
+		cacheBuffer: make([][]byte, 0, 1000),
+		closeChan:   make(chan struct{}),
 	}
+	go r.addToBuffer()
 	go r.loopWrite()
 	return r, nil
 }
@@ -47,7 +50,8 @@ func (l *Logging) Save(data []byte) error {
 	l.bufferChan <- buff.Bytes()
 	return nil
 }
-func (l *Logging) loopWrite() {
+
+func (l *Logging) addToBuffer() {
 LOOP:
 	for {
 		select {
@@ -65,6 +69,7 @@ LOOP:
 					if string(s[len(s)-1]) != "}" {
 						s = append(s, []byte("}")...)
 					}
+
 					nbuff = append(nbuff, s)
 				}
 			} else {
@@ -73,14 +78,29 @@ LOOP:
 			l.lock.Lock()
 			l.cacheBuffer = append(l.cacheBuffer, nbuff...)
 			l.lock.Unlock()
+		}
+	}
+}
+
+func (l *Logging) loopWrite() {
+Loop:
+	for {
+		select {
+		case <-l.closeChan:
+			break Loop
 		case <-time.After(time.Second * time.Duration(l.conf.Cron)): //定时写入数据
+			if l.done {
+				break Loop
+			}
 			l.writeNow()
 		}
 	}
+
 	//最后写入所有数据
 	l.writeNow()
 	l.w.Done()
 }
+
 func (l *Logging) writeNow() {
 	l.lock.Lock()
 	buff := l.cacheBuffer[0:]
@@ -111,6 +131,7 @@ func (l *Logging) Close() error {
 	l.once.Do(func() {
 		l.w.Add(1)
 		close(l.bufferChan)
+		close(l.closeChan)
 	})
 	l.w.Wait()
 	return nil
