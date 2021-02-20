@@ -8,7 +8,7 @@ import (
 
 	"github.com/micro-plat/lib4go/utility"
 
-	elastic "gopkg.in/olivere/elastic.v5"
+	elastic "github.com/olivere/elastic/v7"
 )
 
 //Conf elastic配置
@@ -65,12 +65,12 @@ func (client *Client) BenchAddData(datas [][]byte, timeout int) (n int, err erro
 		}
 	}()
 
-	bulkRequest := client.Bulk().Index(client.index).Type(client.typeName)
+	bulkRequest := client.Bulk().Index(client.index)
 	for _, item := range datas {
 		logid := utility.GetGUID()
 		data := string(item)
 		n += utf8.RuneCount(item)
-		indexReq := elastic.NewBulkIndexRequest().Index(client.index).Type(client.typeName).Id(logid).Doc(data)
+		indexReq := elastic.NewBulkIndexRequest().Index(client.index).Id(logid).Doc(data)
 		bulkRequest = bulkRequest.Add(indexReq)
 	}
 
