@@ -34,3 +34,27 @@ func GetLogging(c container.IContainer, index string, typeName string) (*Logging
 	return v.(*Logging), nil
 
 }
+
+//GetClearClient 获取日志清理组件
+func GetClearClient(c container.IContainer) (*ClearClient, error) {
+	v, err := c.GetOrCreate(typeNode, nameNode, func(conf *conf.RawConf, keys ...string) (interface{}, error) {
+		if conf.IsEmpty() {
+			return nil, fmt.Errorf("节点/%s/%s未配置，或不可用", typeNode, nameNode)
+		}
+		c := &Conf{}
+		if err := conf.ToStruct(c); err != nil {
+			return nil, err
+		}
+
+		client, err := NewClearClient(c)
+		if err != nil {
+			return nil, err
+		}
+		return client, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return v.(*ClearClient), nil
+
+}

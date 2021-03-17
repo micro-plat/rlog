@@ -17,7 +17,7 @@ type Conf struct {
 	UserName     string `json:"user-name"`
 	Password     string `json:"password"`
 	WriteTimeout int    `json:"write-timeout" valid:"required"`
-	Cron         int    `json:"cron" valid:"number,required"`
+	Cron         int    `json:"cron" valid:"required"`
 }
 
 //Client es client
