@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 	"unicode/utf8"
 
+	"github.com/micro-plat/lib4go/types"
 	"github.com/micro-plat/lib4go/utility"
 
 	elastic "github.com/olivere/elastic/v7"
@@ -20,6 +22,15 @@ type Conf struct {
 	Cron         int    `json:"cron" valid:"required"`
 }
 
+//GetAddressArry 获取es集群地址列表
+func (c *Conf) GetAddressArry() []string {
+	if types.IsEmpty(c.Address) {
+		return []string{}
+	}
+
+	return strings.Split(c.Address, ",")
+}
+
 //Client es client
 type Client struct {
 	*elastic.Client
@@ -29,7 +40,8 @@ type Client struct {
 
 //NewClient 获取elastic client
 func NewClient(c *Conf, index string, typeName string) (client *Client, err error) {
-	clt, err := elastic.NewClient(elastic.SetURL(c.Address),
+	addrs := c.GetAddressArry()
+	clt, err := elastic.NewClient(elastic.SetURL(addrs...),
 		elastic.SetBasicAuth(c.UserName, c.Password))
 	if err != nil {
 		return nil, err

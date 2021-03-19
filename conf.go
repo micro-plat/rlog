@@ -22,7 +22,7 @@ func init() {
 			hydra.Conf.API("7071").Metric("http://192.168.106.219:8086", "convoy", "@every 10s")
 			hydra.Conf.RPC("7011").Metric("http://192.168.106.219:8086", "convoy", "@every 10s")
 			hydra.Conf.Vars().Custom("elastic", "logging", &services.Conf{
-				Address:      "http://192.168.106.177:9200",
+				Address:      `http://192.168.106.177:9200,http://192.168.0.126:9200,http://192.168.5.94:9200`,
 				UserName:     "",
 				Password:     "",
 				WriteTimeout: 50,

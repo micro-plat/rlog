@@ -33,7 +33,8 @@ type ClearClient struct {
 
 //NewClearClient 获取elastic client
 func NewClearClient(c *Conf) (client *ClearClient, err error) {
-	clt, err := elastic.NewClient(elastic.SetURL(c.Address),
+	addrs := c.GetAddressArry()
+	clt, err := elastic.NewClient(elastic.SetURL(addrs...),
 		elastic.SetBasicAuth(c.UserName, c.Password))
 	if err != nil {
 		return nil, err
