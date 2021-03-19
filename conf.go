@@ -13,14 +13,14 @@ func init() {
 	App.Micro("/log/save", services.SaveHandle)
 	App.CRON("/log/clear", services.ClearHandle, "@every 10h")
 	hydra.OnReady(func() {
-		hydra.Conf.API("7071")
-		hydra.Conf.RPC("7011")
 		hydra.Conf.CRON(cron.WithMasterSlave())
 		hydra.Conf.Vars().Custom("conf", "clearConf", &services.ClearConf{
-			ExpireDay: 7,
+			ExpireDay: 15,
 		})
 
 		if hydra.IsDebug() {
+			hydra.Conf.API("7071").Metric("http://192.168.106.219:8086", "convoy", "@every 10s")
+			hydra.Conf.RPC("7011").Metric("http://192.168.106.219:8086", "convoy", "@every 10s")
 			hydra.Conf.Vars().Custom("elastic", "logging", &services.Conf{
 				Address:      "http://192.168.106.177:9200",
 				UserName:     "",
@@ -31,6 +31,8 @@ func init() {
 			return
 		}
 
+		hydra.Conf.API(conf.ByInstall).Metric(conf.ByInstall, conf.ByInstall, "@every 10s")
+		hydra.Conf.RPC(conf.ByInstall).Metric(conf.ByInstall, conf.ByInstall, "@every 10s")
 		hydra.Conf.Vars().Custom("elastic", "logging", &services.Conf{
 			Address:      conf.ByInstall,
 			UserName:     "",
