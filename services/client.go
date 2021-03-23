@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -79,7 +80,7 @@ func (client *Client) BenchAddData(datas [][]byte, timeout int) (n int, err erro
 
 	bulkRequest := client.Bulk().Index(client.index)
 	for _, item := range datas {
-		logid := utility.GetGUID()
+		logid := getLogid(item)
 		data := string(item)
 		n += utf8.RuneCount(item)
 		indexReq := elastic.NewBulkIndexRequest().Index(client.index).Id(logid).Doc(data)
@@ -134,4 +135,37 @@ func (client *Client) AddData(logID string, timeout int, data string) (err error
 		return err
 	}
 	return
+}
+
+func getLogid(data []byte) string {
+	gid := utility.GetGUID()
+	m := types.XMap{}
+	if err := json.Unmarshal(data, &m); err != nil {
+		return fmt.Sprintf("%d%s", time.Now().UnixNano(), gid[len(gid)-13:])
+	}
+
+	timeStr := m.GetString("time")
+	if timeStr == "" {
+		return fmt.Sprintf("%d%s", time.Now().UnixNano(), gid[len(gid)-13:])
+	}
+
+	timeArry := strings.Split(timeStr, ".")
+	t, err := time.ParseInLocation("2006/01/02 15:04:05", timeArry[0], time.Local)
+	if err != nil {
+		return fmt.Sprintf("%d%s", time.Now().UnixNano(), gid[len(gid)-13:])
+	}
+
+	logid := fmt.Sprintf("%d", t.Unix())
+	if len(timeArry) >= 2 {
+		logid = fmt.Sprintf("%s%s", logid, timeArry[1])
+	}
+
+	bc := 32 - len(logid)
+	if bc == 0 {
+		return logid
+	}
+	if bc < 0 {
+		return logid[:32]
+	}
+	return fmt.Sprintf("%s%s", logid, gid[len(gid)-bc:])
 }
