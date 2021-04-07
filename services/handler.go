@@ -28,7 +28,8 @@ func SaveHandle(ctx hydra.IContext) (r interface{}) {
 
 	//保存日志
 	index := fmt.Sprintf("%s_%s%s", plat, system, time.Now().Format("20060102"))
-	logger, err := GetLogging(hydra.C.Container(), index, index)
+	group := fmt.Sprintf("%s_%s", plat, system)
+	logger, err := GetLogging(hydra.C.Container(), group, index, index)
 	if err != nil {
 		return err
 	}
