@@ -14,12 +14,16 @@ func SaveHandle(ctx hydra.IContext) (r interface{}) {
 	plat := ctx.Request().Headers().GetString("Plat")
 	system := ctx.Request().Headers().GetString("System")
 	if plat == "" || system == "" {
-		return fmt.Errorf("请求头信息plat和system不能为空")
+		err := fmt.Errorf("请求头信息plat和system不能为空")
+		ctx.Log().Error(err)
+		return
 	}
 
 	//获取数据
 	body, err := ctx.Request().GetBody()
 	if err != nil {
+		err = fmt.Errorf("获取请求内容出错：%w,Body:%s", err, string(body))
+		ctx.Log().Error(err)
 		return err
 	}
 	if len(body) <= 2 {
@@ -31,9 +35,13 @@ func SaveHandle(ctx hydra.IContext) (r interface{}) {
 	group := fmt.Sprintf("%s_%s", plat, system)
 	logger, err := GetLogging(hydra.C.Container(), group, index, index)
 	if err != nil {
+		err = fmt.Errorf("获取Logger：%w", err)
+		ctx.Log().Error(err)
 		return err
 	}
 	if err = logger.Save(body); err != nil {
+		err = fmt.Errorf("保存日志内容：%w", err)
+		ctx.Log().Error(err)
 		return err
 	}
 	return "success"
