@@ -1,3 +1,4 @@
+//go:build !prod
 // +build !prod
 
 package main
@@ -17,7 +18,7 @@ func init() {
 	})
 
 	hydra.Conf.Vars().Custom("elastic", "logging", &services.Conf{
-		Address:      `http://192.168.106.177:9200,http://192.168.0.126:9200,http://192.168.106.176:9200`,
+		Address:      `http://192.168.106.177:9200,http://192.168.0.126:9200,http://192.168.0.125:9200`,
 		UserName:     "",
 		Password:     "",
 		WriteTimeout: 50,
