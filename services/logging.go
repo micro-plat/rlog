@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"sync"
 	"time"
 
@@ -64,14 +65,20 @@ LOOP:
 			}
 			nbuff := make([][]byte, 0, 1)
 			if buff[0] == '[' {
-				sections := bytes.Split(buff[1:len(buff)-1], []byte("},"))
-				for _, s := range sections {
-					if string(s[len(s)-1]) != "}" {
-						s = append(s, []byte("}")...)
-					}
-
-					nbuff = append(nbuff, s)
+				tmps := []map[string]interface{}{}
+				json.Unmarshal(buff, &tmps)
+				for i := range tmps {
+					b, _ := json.Marshal(tmps[i])
+					nbuff = append(nbuff, b)
 				}
+				// sections := bytes.Split(buff[1:len(buff)-1], []byte("},"))
+				// for _, s := range sections {
+				// 	if string(s[len(s)-1]) != "}" {
+				// 		s = append(s, []byte("}")...)
+				// 	}
+
+				// 	nbuff = append(nbuff, s)
+				// }
 			} else {
 				nbuff = append(nbuff, buff)
 			}
@@ -116,9 +123,14 @@ func (l *Logging) Write(p [][]byte) (n int, err error) {
 	defer l.w.Done()
 	l.logger.Info(" --> logging request")
 	start := time.Now()
+
+	for i := range p {
+		fmt.Printf("%d,%s \n", i, string(p[i]))
+	}
+
 	n, err = l.client.BenchAddData(p, l.conf.WriteTimeout)
 	if err != nil {
-		l.logger.Errorf("-> logging response %d条 %v %v", len(p), time.Since(start), err)
+		l.logger.Errorf("-> logging response %d条 %v %+v", len(p), time.Since(start), err)
 		return 0, err
 	}
 	l.logger.Infof(" --> logging response %d条 %v %v", len(p), n, time.Since(start))
