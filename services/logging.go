@@ -3,7 +3,6 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"sync"
 	"time"
 
@@ -123,10 +122,6 @@ func (l *Logging) Write(p [][]byte) (n int, err error) {
 	defer l.w.Done()
 	l.logger.Info(" --> logging request")
 	start := time.Now()
-
-	for i := range p {
-		fmt.Printf("%d,%s \n", i, string(p[i]))
-	}
 
 	n, err = l.client.BenchAddData(p, l.conf.WriteTimeout)
 	if err != nil {
