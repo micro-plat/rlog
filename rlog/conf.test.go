@@ -11,8 +11,8 @@ import (
 
 func init() {
 	hydra.Conf.CRON(cron.WithMasterSlave())
-	hydra.Conf.API("7071").Metric("http://192.168.0.185:8086", "convoy", "@every 10s")
-	hydra.Conf.RPC("7011").Metric("http://192.168.0.185:8086", "convoy", "@every 10s")
+	hydra.Conf.API("7071")
+	hydra.Conf.RPC("7011")
 	hydra.Conf.Vars().Custom("conf", "clearConf", &services.ClearConf{
 		ExpireDay: 15,
 	})

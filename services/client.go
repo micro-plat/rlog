@@ -58,7 +58,77 @@ func (client *Client) CheckIndexType() error {
 	if exists, err := client.IndexExists(client.index).Do(ctx); exists || err != nil {
 		return err
 	}
-	createIndex, err := client.CreateIndex(client.index).Do(ctx)
+
+	indexMap := types.XMap{
+		"settings": types.XMap{
+			"number_of_shards":   1,
+			"number_of_replicas": 1,
+		},
+		"mappings": types.XMap{
+			"_doc": types.XMap{
+				"properties": types.XMap{
+					"level": types.XMap{
+						"type": "text",
+						"fields": types.XMap{
+							"keyword": types.XMap{
+								"type":         "keyword",
+								"ignore_above": 256,
+							},
+						},
+					},
+					"session": types.XMap{
+						"type": "text",
+						"fields": types.XMap{
+							"keyword": types.XMap{
+								"type":         "keyword",
+								"ignore_above": 256,
+							},
+						},
+					},
+					"seq_id": types.XMap{
+						"type": "text",
+						"fields": types.XMap{
+							"keyword": types.XMap{
+								"type":         "keyword",
+								"ignore_above": 256,
+							},
+						},
+						"fielddata": true,
+					},
+					"server-ip": types.XMap{
+						"type": "text",
+						"fields": types.XMap{
+							"keyword": types.XMap{
+								"type":         "keyword",
+								"ignore_above": 256,
+							},
+						},
+					},
+					"time": types.XMap{
+						"type": "text",
+						"fields": types.XMap{
+							"keyword": types.XMap{
+								"type":         "keyword",
+								"ignore_above": 256,
+							},
+						},
+					},
+					"content": types.XMap{
+						"type": "text",
+						"fields": types.XMap{
+							"keyword": types.XMap{
+								"type":         "keyword",
+								"ignore_above": 256,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	createIndex, err := client.CreateIndex(client.index).BodyJson(indexMap).IncludeTypeName(true).Do(ctx)
+	//createIndex, err := client.CreateIndex(client.index).Do(ctx)
 	if err != nil {
 		err = fmt.Errorf("创建索引%s失败 %v", client.index, err)
 		return err
